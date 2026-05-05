@@ -5,7 +5,9 @@
     "description": "Random locations across the entire globe",
     "file": "maps/world.txt",
     "icon": "🌍",
-    "accent": "#3b82f6"
+    "center": { "lat": 20, "lng": 0 },
+    "zoom": 2,
+    "scoreRadius": 2000
   },
   {
     "id": "perth",
@@ -13,6 +15,8 @@
     "description": "Streets and suburbs across the Perth metro area",
     "file": "maps/perth.txt",
     "icon": "🦘",
-    "accent": "#f59e0b"
+    "center": { "lat": -31.95, "lng": 115.86 },
+    "zoom": 10,
+    "scoreRadius": 30
   }
 ]
