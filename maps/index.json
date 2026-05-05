@@ -1,0 +1,10 @@
+[
+  {
+    "id": "world",
+    "name": "World",
+    "description": "Random locations across the entire globe",
+    "file": "maps/world.txt",
+    "icon": "🌍",
+    "accent": "#3b82f6"
+  }
+]
