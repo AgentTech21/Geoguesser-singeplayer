@@ -384,10 +384,11 @@ function showRound(){
 function findStreetView(attempts){
   if(poolIdx>=gameLocPool.length){ gameLocPool=shuffle([...currentMapData]); poolIdx=0; }
   const loc=gameLocPool[poolIdx++];
+  const svRadius = (currentMapMeta && currentMapMeta.svRadius) ? currentMapMeta.svRadius : 5000;
   const svc=new google.maps.StreetViewService();
   svc.getPanorama({
     location:{lat:loc.lat,lng:loc.lng},
-    radius:100000,
+    radius: svRadius,
     source:google.maps.StreetViewSource.OUTDOOR
   },(data,status)=>{
     if(status===google.maps.StreetViewStatus.OK){
@@ -395,7 +396,8 @@ function findStreetView(attempts){
       answerLng=data.location.latLng.lng();
       initStreetView(answerLat,answerLng);
     } else {
-      if(attempts<20) findStreetView(attempts+1);
+      // No coverage nearby — just try the next coordinate, don't cast a wider net
+      if(attempts < gameLocPool.length) findStreetView(attempts+1);
       else { document.getElementById('loading-text').textContent='Struggling to find coverage…'; setTimeout(()=>findStreetView(0),1500); }
     }
   });
