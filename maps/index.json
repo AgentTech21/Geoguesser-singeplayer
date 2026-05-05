@@ -7,7 +7,8 @@
     "icon": "🌍",
     "center": { "lat": 20, "lng": 0 },
     "zoom": 2,
-    "scoreRadius": 1491
+    "scoreRadius": 1491,
+    "svRadius": 5000
   },
   {
     "id": "australia",
@@ -17,7 +18,8 @@
     "icon": "🦘",
     "center": { "lat": -25, "lng": 134 },
     "zoom": 4,
-    "scoreRadius": 513
+    "scoreRadius": 513,
+    "svRadius": 5000
   },
   {
     "id": "perth",
@@ -27,6 +29,7 @@
     "icon": "🏙️",
     "center": { "lat": -31.95, "lng": 115.86 },
     "zoom": 10,
-    "scoreRadius": 11
+    "scoreRadius": 11,
+    "svRadius": 1000
   }
 ]
