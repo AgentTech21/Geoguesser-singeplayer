@@ -6,5 +6,13 @@
     "file": "maps/world.txt",
     "icon": "🌍",
     "accent": "#3b82f6"
+  },
+  {
+    "id": "perth",
+    "name": "Perth, Australia",
+    "description": "Streets and suburbs across the Perth metro area",
+    "file": "maps/perth.txt",
+    "icon": "🦘",
+    "accent": "#f59e0b"
   }
 ]
