@@ -13,7 +13,7 @@
   --gold:#d4a853;--gold2:#f0c97a;
   --text:#e2e8f0;--muted:#94a3b8;--green:#34d399;
   --border:rgba(255,255,255,0.10);
-  --shadow:0 8px 32px rgba(0,0,0,.55);
+  --shadow:0 8px 40px rgba(0,0,0,.6);
 }
 html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:var(--navy);color:var(--text);font-size:15px}
 
@@ -28,28 +28,30 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-14px)}}
 #s-intro h1{font-family:'Cinzel',serif;font-size:clamp(2rem,6vw,3.5rem);font-weight:600;color:var(--gold);letter-spacing:.06em;margin-bottom:.3rem}
 .tagline{font-size:1rem;color:var(--muted);font-style:italic;margin-bottom:1.5rem}
-.intro-desc{max-width:460px;line-height:1.7;color:var(--muted);font-size:.9rem;margin-bottom:2rem}
-.btn{display:inline-flex;align-items:center;gap:.45rem;padding:.7rem 1.8rem;border-radius:6px;
-  font-family:'Inter',sans-serif;font-size:.9rem;font-weight:500;cursor:pointer;border:none;transition:all .15s}
+.intro-desc{max-width:460px;line-height:1.7;color:var(--muted);font-size:.9rem;margin-bottom:2.2rem}
+.btn-group{display:flex;flex-direction:column;align-items:center;gap:.75rem}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;padding:.75rem 2rem;border-radius:8px;
+  font-family:'Inter',sans-serif;font-size:.95rem;font-weight:500;cursor:pointer;border:none;transition:all .15s;min-width:220px}
 .btn-gold{background:var(--gold);color:#0f172a}
-.btn-gold:hover{background:var(--gold2)}
-.btn-gold:disabled{opacity:.4;cursor:not-allowed}
-.btn-outline{background:transparent;color:var(--muted);border:1px solid var(--border)}
-.btn-outline:hover{color:var(--text);border-color:rgba(255,255,255,.25)}
+.btn-gold:hover{background:var(--gold2);transform:translateY(-1px)}
+.btn-gold:disabled{opacity:.4;cursor:not-allowed;transform:none}
+.btn-outline{background:transparent;color:var(--text);border:1px solid rgba(255,255,255,.2)}
+.btn-outline:hover{border-color:var(--gold);color:var(--gold);transform:translateY(-1px)}
+.btn-sm{min-width:0;padding:.55rem 1.2rem;font-size:.85rem}
 
 /* ══════════════════ MAP SELECT ══════════════════ */
 #s-maps{align-items:center;justify-content:center;padding:2rem;
   background:radial-gradient(ellipse at 50% 0%,rgba(212,168,83,.1) 0%,transparent 65%) var(--navy)}
 #s-maps h2{font-family:'Cinzel',serif;font-size:1.6rem;color:var(--gold);margin-bottom:.4rem}
-#s-maps p{font-size:.87rem;color:var(--muted);margin-bottom:2rem}
-#map-cards{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;max-width:800px;width:100%}
+#s-maps>p{font-size:.87rem;color:var(--muted);margin-bottom:2rem}
+#map-cards{display:flex;flex-wrap:wrap;gap:1rem;justify-content:center;max-width:820px;width:100%;margin-bottom:1.5rem}
 .map-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:1.4rem 1.6rem;
-  cursor:pointer;transition:all .18s;text-align:left;min-width:200px;max-width:260px;flex:1}
-.map-card:hover{border-color:var(--gold);background:var(--surface2);transform:translateY(-2px);box-shadow:var(--shadow)}
+  cursor:pointer;transition:all .18s;text-align:left;min-width:200px;max-width:260px;flex:1;user-select:none}
+.map-card:hover{border-color:var(--gold);background:var(--surface2);transform:translateY(-3px);box-shadow:var(--shadow)}
 .map-card-icon{font-size:2.4rem;margin-bottom:.6rem}
 .map-card-name{font-family:'Cinzel',serif;font-size:1.05rem;color:var(--gold);margin-bottom:.25rem}
 .map-card-desc{font-size:.8rem;color:var(--muted);line-height:1.5;margin-bottom:.6rem}
-.map-card-count{font-size:.75rem;color:var(--muted);opacity:.7}
+.map-card-count{font-size:.75rem;color:var(--muted);opacity:.65}
 #maps-loading{color:var(--muted);font-size:.9rem;font-style:italic}
 #maps-error{color:#f87171;font-size:.9rem}
 
@@ -57,46 +59,49 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 #s-game{position:fixed;inset:0;display:block}
 #sv-container{position:absolute;inset:0;z-index:0}
 
-/* HUD top bar */
+/* HUD */
 #hud{position:absolute;top:0;left:0;right:0;z-index:200;pointer-events:none}
 #prog-bar{height:3px;background:rgba(255,255,255,.08)}
 #prog-fill{height:100%;background:var(--gold);transition:width .5s}
 #hud-row{display:flex;justify-content:space-between;align-items:center;padding:.55rem 1rem;
-  background:linear-gradient(to bottom,rgba(15,23,42,.75) 0%,transparent 100%)}
-.hud-chip{font-size:.78rem;color:var(--text);font-weight:500;letter-spacing:.02em}
+  background:linear-gradient(to bottom,rgba(15,23,42,.78) 0%,transparent 100%)}
+.hud-chip{font-size:.78rem;color:var(--text);font-weight:500}
 .hud-chip span{color:var(--gold)}
 
-/* Mini-map panel */
+/* ── Mini-map panel ── */
 #map-panel{
   position:absolute;bottom:24px;right:24px;z-index:300;
-  background:rgba(15,23,42,.90);backdrop-filter:blur(10px);
+  background:rgba(12,20,35,.92);backdrop-filter:blur(12px);
   border:1px solid var(--border);border-radius:12px;
   box-shadow:var(--shadow);
   width:300px;
-  transition:width .3s ease,opacity .2s;
+  transition:width .28s cubic-bezier(.4,0,.2,1), opacity .2s;
   overflow:hidden;
 }
-#map-panel:hover{opacity:1}
+/* Collapsed map height */
+#guess-map-el{
+  height:190px;
+  transition:height .28s cubic-bezier(.4,0,.2,1);
+}
+/* Hover / expanded state */
+#map-panel.big{width:600px}
+#map-panel.big #guess-map-el{height:440px}
+
 #map-toolbar{
   display:flex;align-items:center;justify-content:space-between;
-  padding:.45rem .65rem .45rem .8rem;border-bottom:1px solid var(--border);
-  gap:.5rem;
+  padding:.45rem .65rem .45rem .8rem;border-bottom:1px solid var(--border);gap:.5rem;
 }
 #map-hint-text{font-size:.73rem;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.icon-btn{background:transparent;border:none;color:var(--muted);cursor:pointer;
-  font-size:1rem;padding:.1rem .3rem;border-radius:4px;transition:color .15s;line-height:1}
-.icon-btn:hover{color:var(--text)}
-#guess-map-el{height:200px;transition:height .3s ease}
-#map-panel.big #guess-map-el{height:370px}
-#map-panel.big{width:500px}
 #map-footer{padding:.55rem .7rem;border-top:1px solid var(--border);display:flex;align-items:center;gap:.6rem}
-#confirm-btn{flex:1;padding:.45rem;font-size:.82rem;font-family:'Inter',sans-serif;
+#confirm-btn{
+  flex:1;padding:.45rem;font-size:.82rem;font-family:'Inter',sans-serif;
   font-weight:500;border:none;border-radius:6px;cursor:pointer;
-  background:var(--gold);color:#0f172a;transition:all .15s}
+  background:var(--gold);color:#0f172a;transition:all .15s;
+}
 #confirm-btn:disabled{opacity:.35;cursor:not-allowed}
 #confirm-btn:not(:disabled):hover{background:var(--gold2)}
 .kbd{display:inline-block;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
-  border-radius:3px;padding:0 4px;font-size:.68rem;color:var(--muted);font-family:monospace}
+  border-radius:3px;padding:0 5px;font-size:.68rem;color:var(--muted);font-family:monospace;flex-shrink:0}
 
 /* ══════════════════ RESULT ══════════════════ */
 #s-result{flex-direction:row}
@@ -136,8 +141,8 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;
   transition:opacity .4s}
 #sv-loading.hidden{opacity:0;pointer-events:none}
-.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.1);border-top-color:var(--gold);
-  border-radius:50%;animation:spin .8s linear infinite}
+.spinner{width:36px;height:36px;border:3px solid rgba(255,255,255,.1);
+  border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
 @media(max-width:680px){
@@ -156,7 +161,10 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   <h1>GeoGuesser</h1>
   <p class="tagline">How well do you know planet Earth?</p>
   <p class="intro-desc">You'll be dropped into Google Street View somewhere in the world. Look around, then drop a pin where you think you are. Closer = more points.</p>
-  <button class="btn btn-gold" onclick="goToMaps()" style="font-size:1rem;padding:.8rem 2.2rem">▶ &nbsp;Play</button>
+  <div class="btn-group">
+    <button class="btn btn-gold" onclick="goToMaps()">🗺️ &nbsp;Play Singleplayer</button>
+    <button class="btn btn-outline" onclick="goMultiplayer()">👥 &nbsp;Play Multiplayer</button>
+  </div>
 </div>
 
 <!-- ══ MAP SELECT ══ -->
@@ -164,21 +172,18 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   <h2>Choose a Map</h2>
   <p>Select where you want to be dropped in</p>
   <div id="map-cards"><div id="maps-loading">Loading maps…</div></div>
-  <br>
-  <button class="btn btn-outline" onclick="show('s-intro')" style="margin-top:.5rem">← Back</button>
+  <button class="btn btn-outline btn-sm" onclick="show('s-intro')">← Back</button>
 </div>
 
 <!-- ══ GAME ══ -->
 <div id="s-game" class="screen">
   <div id="sv-container"></div>
 
-  <!-- Loading overlay -->
   <div id="sv-loading">
     <div class="spinner"></div>
     <div style="font-size:.88rem;color:var(--muted)" id="loading-text">Finding a location…</div>
   </div>
 
-  <!-- HUD -->
   <div id="hud">
     <div id="prog-bar"><div id="prog-fill" style="width:0%"></div></div>
     <div id="hud-row">
@@ -187,11 +192,10 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
     </div>
   </div>
 
-  <!-- Mini-map -->
+  <!-- Mini-map overlay -->
   <div id="map-panel">
     <div id="map-toolbar">
-      <span id="map-hint-text">Click the map to place your guess</span>
-      <button class="icon-btn" id="expand-btn" onclick="toggleMap()" title="Expand/collapse map">⛶</button>
+      <span id="map-hint-text">Hover to expand · Click to place guess</span>
     </div>
     <div id="guess-map-el"></div>
     <div id="map-footer">
@@ -217,7 +221,10 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
     </div>
     <div style="margin-top:auto;display:flex;flex-direction:column;gap:.5rem">
       <button class="btn btn-gold" id="next-btn" onclick="nextRound()" style="justify-content:center">Next Round →</button>
-      <div style="font-size:.75rem;color:var(--muted);text-align:center">Total: <span id="r-running" style="color:var(--gold);font-weight:500">0</span></div>
+      <div style="font-size:.73rem;color:var(--muted);text-align:center">
+        Total: <span id="r-running" style="color:var(--gold);font-weight:500">0</span>
+        &nbsp;·&nbsp; <span class="kbd">Space</span> for next round
+      </div>
     </div>
   </div>
 </div>
@@ -241,23 +248,27 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 const API_KEY = 'AIzaSyBIJk7x8L3ig2C6Eo3qV8atGtWIMSX8BA4';
 const ROUNDS = 5;
 
-// ── State ──────────────────────────────────────────────────────────
 let gmLoaded = false;
-let currentMapData = null;      // full parsed location list
-let gameLocPool = [];           // shuffled pool for this game
-let poolIdx = 0;                // current position in pool
+let currentMapData = null;
+let gameLocPool = [], poolIdx = 0;
 let round = 0, total = 0, roundScores = [];
-let answerLat, answerLng;       // actual SV panorama location (the answer)
+let answerLat, answerLng;
 let guessLat = null, guessLng = null;
-let guessMap = null, resMap = null;
-let guessMarker = null;
-let mapBig = false;
+let guessMap = null, resMap = null, guessMarker = null;
+let collapseTimer = null;
 
-// ── Helpers ────────────────────────────────────────────────────────
+// ── Screen ─────────────────────────────────────────────────────────
 function show(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
 }
+
+// ── Multiplayer ─────────────────────────────────────────────────────
+function goMultiplayer(){
+  window.location.href = 'https://geoguesser-multiplayer.onrender.com';
+}
+
+// ── Helpers ─────────────────────────────────────────────────────────
 function haversine(a,b,c,d){
   const R=6371,dL=(c-a)*Math.PI/180,dG=(d-b)*Math.PI/180;
   const x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dG/2)**2;
@@ -265,7 +276,7 @@ function haversine(a,b,c,d){
 }
 function calcScore(km){ return Math.round(5000*Math.exp(-km/2000)); }
 function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]} return b; }
-function setProgress(n){ document.getElementById('prog-fill').style.width = (n/ROUNDS*100)+'%'; }
+function setProgress(n){ document.getElementById('prog-fill').style.width=(n/ROUNDS*100)+'%'; }
 function dotIcon(color){
   return L.divIcon({className:'',html:`<div style="width:16px;height:16px;border-radius:50%;background:${color};border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>`,iconAnchor:[8,8]});
 }
@@ -273,7 +284,27 @@ function pulseIcon(){
   return L.divIcon({className:'',html:`<div style="position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center"><div style="width:16px;height:16px;border-radius:50%;background:#d4a853;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:1;position:relative"></div><div style="position:absolute;inset:0;border-radius:50%;background:#d4a853;opacity:.3;animation:ring 1.5s ease-out infinite"></div></div>`,iconAnchor:[14,14]});
 }
 
-// ── Load Google Maps ────────────────────────────────────────────────
+// ── Mini-map hover expand ────────────────────────────────────────────
+const mapPanel = document.getElementById('map-panel');
+
+function expandMap(){
+  mapPanel.classList.add('big');
+  setTimeout(() => { if(guessMap) guessMap.invalidateSize(); }, 300);
+}
+function collapseMap(){
+  mapPanel.classList.remove('big');
+  setTimeout(() => { if(guessMap) guessMap.invalidateSize(); }, 300);
+}
+
+mapPanel.addEventListener('mouseenter', () => {
+  if(collapseTimer){ clearTimeout(collapseTimer); collapseTimer = null; }
+  expandMap();
+});
+mapPanel.addEventListener('mouseleave', () => {
+  collapseTimer = setTimeout(collapseMap, 300);
+});
+
+// ── Google Maps ──────────────────────────────────────────────────────
 function loadGoogleMaps(cb){
   if(gmLoaded){ cb(); return; }
   window._gmCb = () => { gmLoaded = true; cb(); };
@@ -283,14 +314,14 @@ function loadGoogleMaps(cb){
   document.head.appendChild(s);
 }
 
-// ── Map selection ───────────────────────────────────────────────────
+// ── Map selection ────────────────────────────────────────────────────
 function goToMaps(){
   show('s-maps');
   const cards = document.getElementById('map-cards');
   cards.innerHTML = '<div id="maps-loading">Loading maps…</div>';
 
   fetch('maps/index.json')
-    .then(r => { if(!r.ok) throw new Error('Not found'); return r.json(); })
+    .then(r => { if(!r.ok) throw new Error(); return r.json(); })
     .then(maps => {
       cards.innerHTML = '';
       maps.forEach(m => {
@@ -301,17 +332,13 @@ function goToMaps(){
           <div class="map-card-name">${m.name}</div>
           <div class="map-card-desc">${m.description}</div>
           <div class="map-card-count">Loading…</div>`;
-        card.onclick = () => loadAndStart(m, card);
+        card.onclick = () => { card.style.opacity='.5'; loadAndStart(m, card); };
         cards.appendChild(card);
 
-        // Fetch location count
-        fetch(m.file)
-          .then(r => r.text())
-          .then(txt => {
-            const count = txt.split('\n').filter(l => l.trim() && !l.startsWith('#')).length;
-            card.querySelector('.map-card-count').textContent = `${count.toLocaleString()} locations`;
-          })
-          .catch(() => { card.querySelector('.map-card-count').textContent = 'Tap to play'; });
+        fetch(m.file).then(r=>r.text()).then(txt=>{
+          const n = txt.split('\n').filter(l=>l.trim()&&!l.startsWith('#')).length;
+          card.querySelector('.map-card-count').textContent = `${n.toLocaleString()} locations`;
+        }).catch(()=>{ card.querySelector('.map-card-count').textContent='Tap to play'; });
       });
     })
     .catch(() => {
@@ -320,28 +347,20 @@ function goToMaps(){
 }
 
 function loadAndStart(mapMeta, cardEl){
-  if(cardEl) cardEl.style.opacity = '.5';
   fetch(mapMeta.file)
     .then(r => { if(!r.ok) throw new Error(); return r.text(); })
     .then(txt => {
       const locs = txt.split('\n')
-        .map(l => l.trim())
-        .filter(l => l && !l.startsWith('#'))
-        .map(l => {
-          const parts = l.split(',');
-          return { lat: parseFloat(parts[0]), lng: parseFloat(parts[1]), name: parts[2] || null };
-        })
-        .filter(l => !isNaN(l.lat) && !isNaN(l.lng));
-      if(locs.length === 0) throw new Error('No valid locations');
+        .map(l=>l.trim()).filter(l=>l&&!l.startsWith('#'))
+        .map(l=>{ const p=l.split(','); return {lat:parseFloat(p[0]),lng:parseFloat(p[1])}; })
+        .filter(l=>!isNaN(l.lat)&&!isNaN(l.lng));
+      if(!locs.length) throw new Error('Empty');
       loadGoogleMaps(() => startGame(locs));
     })
-    .catch(() => {
-      alert('Failed to load map file: ' + mapMeta.file);
-      if(cardEl) cardEl.style.opacity = '1';
-    });
+    .catch(() => { alert('Failed to load: '+mapMeta.file); if(cardEl) cardEl.style.opacity='1'; });
 }
 
-// ── Start game ──────────────────────────────────────────────────────
+// ── Start game ───────────────────────────────────────────────────────
 function startGame(locs){
   currentMapData = locs;
   gameLocPool = shuffle([...locs]);
@@ -350,176 +369,148 @@ function startGame(locs){
   showRound();
 }
 
-// ── Show round ──────────────────────────────────────────────────────
+// ── Show round ───────────────────────────────────────────────────────
 function showRound(){
   setProgress(round);
-  document.getElementById('round-num').textContent = round + 1;
+  document.getElementById('round-num').textContent = round+1;
   document.getElementById('round-total').textContent = ROUNDS;
   document.getElementById('score-run').textContent = total.toLocaleString();
   guessLat = null; guessLng = null;
-  resetConfirm();
-  document.getElementById('map-hint-text').textContent = 'Click the map to place your guess';
+  document.getElementById('confirm-btn').disabled = true;
+  document.getElementById('map-hint-text').textContent = 'Hover to expand · Click to place guess';
   show('s-game');
 
-  // Show loading overlay
   const loading = document.getElementById('sv-loading');
   loading.classList.remove('hidden');
   document.getElementById('loading-text').textContent = 'Finding a location…';
 
-  // Init guess map
+  // Guess map
   setTimeout(() => {
-    if(guessMap){ guessMap.remove(); guessMap = null; }
-    guessMap = L.map('guess-map-el', {zoomControl:true, attributionControl:false}).setView([20, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(guessMap);
+    if(guessMap){ guessMap.remove(); guessMap=null; }
+    guessMap = L.map('guess-map-el',{zoomControl:true,attributionControl:false}).setView([20,0],2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(guessMap);
     guessMarker = null;
-    guessMap.on('click', e => {
-      guessLat = e.latlng.lat; guessLng = e.latlng.lng;
+    guessMap.on('click', e=>{
+      guessLat=e.latlng.lat; guessLng=e.latlng.lng;
       if(guessMarker) guessMarker.remove();
-      guessMarker = L.marker([guessLat, guessLng], {icon: pulseIcon()}).addTo(guessMap);
-      enableConfirm();
+      guessMarker = L.marker([guessLat,guessLng],{icon:pulseIcon()}).addTo(guessMap);
+      document.getElementById('confirm-btn').disabled = false;
       document.getElementById('map-hint-text').textContent = 'Marker placed — click to adjust';
     });
   }, 50);
 
-  findStreetView();
+  findStreetView(0);
 }
 
 // ── Find Street View ─────────────────────────────────────────────────
 function findStreetView(attempts){
-  attempts = attempts || 0;
-  if(poolIdx >= gameLocPool.length){
-    // Wrap around
-    gameLocPool = shuffle([...currentMapData]);
-    poolIdx = 0;
-  }
+  if(poolIdx >= gameLocPool.length){ gameLocPool=shuffle([...currentMapData]); poolIdx=0; }
   const loc = gameLocPool[poolIdx++];
   const svc = new google.maps.StreetViewService();
   svc.getPanorama({
-    location: { lat: loc.lat, lng: loc.lng },
-    radius: 100000,
-    source: google.maps.StreetViewSource.OUTDOOR
-  }, (data, status) => {
-    if(status === google.maps.StreetViewStatus.OK){
+    location:{lat:loc.lat,lng:loc.lng},
+    radius:100000,
+    source:google.maps.StreetViewSource.OUTDOOR
+  }, (data,status) => {
+    if(status===google.maps.StreetViewStatus.OK){
       answerLat = data.location.latLng.lat();
       answerLng = data.location.latLng.lng();
-      initStreetView(answerLat, answerLng);
+      initStreetView(answerLat,answerLng);
     } else {
-      if(attempts < 20){
-        findStreetView(attempts + 1);
-      } else {
-        document.getElementById('loading-text').textContent = 'Having trouble finding Street View here…';
-        setTimeout(() => findStreetView(0), 1500);
-      }
+      if(attempts<20) findStreetView(attempts+1);
+      else { document.getElementById('loading-text').textContent='Struggling to find coverage…'; setTimeout(()=>findStreetView(0),1500); }
     }
   });
 }
 
-function initStreetView(lat, lng){
-  const sv = new google.maps.StreetViewPanorama(document.getElementById('sv-container'), {
-    position: { lat, lng },
-    pov: { heading: Math.random() * 360, pitch: 0 },
-    zoom: 0,
-    addressControl: false,
-    showRoadLabels: false,
-    motionTracking: false,
-    motionTrackingControl: false,
-    fullscreenControl: false,
-    linksControl: true,
+function initStreetView(lat,lng){
+  new google.maps.StreetViewPanorama(document.getElementById('sv-container'),{
+    position:{lat,lng},
+    pov:{heading:Math.random()*360,pitch:0},
+    zoom:0,
+    addressControl:false,
+    showRoadLabels:false,
+    motionTracking:false,
+    motionTrackingControl:false,
+    fullscreenControl:false,
+    linksControl:true,
   });
-
-  sv.addListener('status_changed', () => {
-    if(sv.getStatus() === google.maps.StreetViewStatus.OK){
-      document.getElementById('sv-loading').classList.add('hidden');
-    }
-  });
+  // Hide loading once tiles start arriving (small delay is enough)
+  setTimeout(()=>document.getElementById('sv-loading').classList.add('hidden'),800);
 }
 
-// ── Mini-map toggle ─────────────────────────────────────────────────
-function toggleMap(){
-  const panel = document.getElementById('map-panel');
-  mapBig = !mapBig;
-  panel.classList.toggle('big', mapBig);
-  document.getElementById('expand-btn').textContent = mapBig ? '⊡' : '⛶';
-  setTimeout(() => { if(guessMap) guessMap.invalidateSize(); }, 320);
-}
-
-// ── Confirm ──────────────────────────────────────────────────────────
-function resetConfirm(){
-  const btn = document.getElementById('confirm-btn');
-  btn.disabled = true;
-}
-function enableConfirm(){
-  document.getElementById('confirm-btn').disabled = false;
-}
-
+// ── Confirm guess ────────────────────────────────────────────────────
 function confirmGuess(){
-  if(guessLat === null || document.getElementById('confirm-btn').disabled) return;
+  if(guessLat===null || document.getElementById('confirm-btn').disabled) return;
 
-  const km = haversine(guessLat, guessLng, answerLat, answerLng);
+  const km = haversine(guessLat,guessLng,answerLat,answerLng);
   const pts = calcScore(km);
   total += pts;
-  roundScores.push({ km, pts });
-  setProgress(round + 1);
+  roundScores.push({km,pts});
+  setProgress(round+1);
 
-  document.getElementById('r-name').textContent = 'Round ' + (round + 1) + ' location';
+  document.getElementById('r-name').textContent = 'Round '+(round+1)+' location';
   document.getElementById('r-country').textContent = `${answerLat.toFixed(4)}°, ${answerLng.toFixed(4)}°`;
-  document.getElementById('r-dist').textContent = km < 1 ? '< 1 km' : km < 1000 ? `${Math.round(km).toLocaleString()} km away` : `${(km/1000).toFixed(1)}k km away`;
+  document.getElementById('r-dist').textContent = km<1?'< 1 km':km<1000?`${Math.round(km).toLocaleString()} km away`:`${(km/1000).toFixed(1)}k km away`;
   document.getElementById('r-pts').textContent = `+${pts.toLocaleString()} pts`;
-  document.getElementById('r-bar').style.width = (pts/5000*100) + '%';
+  document.getElementById('r-bar').style.width = (pts/5000*100)+'%';
   document.getElementById('r-running').textContent = total.toLocaleString();
-  document.getElementById('next-btn').textContent = round === ROUNDS - 1 ? 'See Final Score →' : 'Next Round →';
+  document.getElementById('next-btn').textContent = round===ROUNDS-1 ? 'See Final Score →' : 'Next Round →';
 
   show('s-result');
-  setTimeout(() => {
-    if(resMap){ resMap.remove(); resMap = null; }
-    resMap = L.map('res-map', {zoomControl:true, attributionControl:false}).setView([0,0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {maxZoom:19}).addTo(resMap);
-    L.marker([guessLat, guessLng], {icon: dotIcon('#d4a853')}).addTo(resMap).bindTooltip('Your guess', {permanent:false});
-    L.marker([answerLat, answerLng], {icon: dotIcon('#34d399')}).addTo(resMap).bindTooltip('Actual location', {permanent:true, direction:'top', offset:[0,-8]});
-    L.polyline([[guessLat,guessLng],[answerLat,answerLng]], {color:'#94a3b8', weight:1.5, dashArray:'6,5'}).addTo(resMap);
-    resMap.fitBounds(L.latLngBounds([[guessLat,guessLng],[answerLat,answerLng]]), {padding:[60,60]});
-  }, 50);
+  setTimeout(()=>{
+    if(resMap){resMap.remove();resMap=null;}
+    resMap = L.map('res-map',{zoomControl:true,attributionControl:false}).setView([0,0],2);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(resMap);
+    L.marker([guessLat,guessLng],{icon:dotIcon('#d4a853')}).addTo(resMap).bindTooltip('Your guess');
+    L.marker([answerLat,answerLng],{icon:dotIcon('#34d399')}).addTo(resMap).bindTooltip('Actual location',{permanent:true,direction:'top',offset:[0,-8]});
+    L.polyline([[guessLat,guessLng],[answerLat,answerLng]],{color:'#94a3b8',weight:1.5,dashArray:'6,5'}).addTo(resMap);
+    resMap.fitBounds(L.latLngBounds([[guessLat,guessLng],[answerLat,answerLng]]),{padding:[60,60]});
+  },50);
 }
 
 // ── Next round ───────────────────────────────────────────────────────
-function nextRound(){
-  round++;
-  if(round >= ROUNDS) showFinal();
-  else showRound();
-}
+function nextRound(){ round++; round>=ROUNDS ? showFinal() : showRound(); }
 
-// ── Final ────────────────────────────────────────────────────────────
+// ── Final screen ─────────────────────────────────────────────────────
 function showFinal(){
   document.getElementById('f-score').textContent = total.toLocaleString();
-  let medal = '🌍', rank = "Keep exploring — the world awaits!";
-  if(total >= 23000){ medal = '🥇'; rank = "Outstanding! You're a true world explorer."; }
-  else if(total >= 18000){ medal = '🥈'; rank = "Impressive geography skills!"; }
-  else if(total >= 12000){ medal = '🥉'; rank = "Solid effort — you know your world."; }
-  else if(total >= 6000){ rank = "Not bad — keep traveling!"; }
+  let medal='🌍', rank="Keep exploring — the world awaits!";
+  if(total>=23000){medal='🥇';rank="Outstanding! You're a true world explorer.";}
+  else if(total>=18000){medal='🥈';rank="Impressive geography skills!";}
+  else if(total>=12000){medal='🥉';rank="Solid effort — you know your world.";}
+  else if(total>=6000){rank="Not bad — keep traveling!";}
   document.getElementById('f-medal').textContent = medal;
   document.getElementById('f-rank').textContent = rank;
 
-  let html = `<div class="br-row"><span>Round</span><span>Distance</span><span>Points</span></div>`;
-  roundScores.forEach((s,i) => {
-    const d = s.km < 1000 ? `${Math.round(s.km)} km` : `${(s.km/1000).toFixed(1)}k km`;
-    html += `<div class="br-row"><span>Round ${i+1}</span><span>${d}</span><span>+${s.pts.toLocaleString()}</span></div>`;
+  let html=`<div class="br-row"><span>Round</span><span>Distance</span><span>Points</span></div>`;
+  roundScores.forEach((s,i)=>{
+    const d=s.km<1000?`${Math.round(s.km)} km`:`${(s.km/1000).toFixed(1)}k km`;
+    html+=`<div class="br-row"><span>Round ${i+1}</span><span>${d}</span><span>+${s.pts.toLocaleString()}</span></div>`;
   });
-  html += `<div class="br-row"><span>Total</span><span></span><span>${total.toLocaleString()}</span></div>`;
+  html+=`<div class="br-row"><span>Total</span><span></span><span>${total.toLocaleString()}</span></div>`;
   document.getElementById('f-breakdown').innerHTML = html;
   show('s-final');
 }
 
-// ── Spacebar confirm ─────────────────────────────────────────────────
+// ── Keyboard shortcuts ───────────────────────────────────────────────
 document.addEventListener('keydown', e => {
-  if(e.code === 'Space' && document.getElementById('s-game').classList.contains('active')){
+  if(e.code !== 'Space') return;
+  // Game screen: confirm guess
+  if(document.getElementById('s-game').classList.contains('active')){
     e.preventDefault();
     confirmGuess();
+  }
+  // Result screen: next round
+  if(document.getElementById('s-result').classList.contains('active')){
+    e.preventDefault();
+    nextRound();
   }
 });
 
 // ── Pulse animation ──────────────────────────────────────────────────
-const sty = document.createElement('style');
-sty.textContent = `@keyframes ring{0%{transform:scale(.8);opacity:.5}100%{transform:scale(2.4);opacity:0}}`;
+const sty=document.createElement('style');
+sty.textContent=`@keyframes ring{0%{transform:scale(.8);opacity:.5}100%{transform:scale(2.4);opacity:0}}`;
 document.head.appendChild(sty);
 </script>
 </body>
