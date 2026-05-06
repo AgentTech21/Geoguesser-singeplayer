@@ -289,9 +289,15 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   <div id="hud">
     <div id="prog-bar"><div id="prog-fill" style="width:0%"></div></div>
     <div id="hud-row">
-      <div class="hud-chip">
-        <span class="label">Round</span>
-        <span id="round-num">1</span> <span style="color:var(--muted);font-weight:400">/</span> <span id="round-total">5</span>
+      <div style="display:flex;gap:.5rem;align-items:center">
+        <div class="hud-chip">
+          <span class="label">Round</span>
+          <span id="round-num">1</span> <span style="color:var(--muted);font-weight:400">/</span> <span id="round-total">5</span>
+        </div>
+        <div class="hud-chip">
+          <span class="label">Map</span>
+          <span id="map-name-hud">—</span>
+        </div>
       </div>
       <div class="hud-chip">
         <span class="label">Score</span>
@@ -410,8 +416,8 @@ function pulseIcon(){
 // No alternating widths = no drift.
 const PX_PER_DEG = 1.5;  // 260px bar ≈ 173° visible at once
 const BAR_HALF   = 130;
-const REPS       = 5;
-const CENTRE_REP = 2;    // use the 3rd repetition's N as the reference point
+const REPS       = 21;   // enough for ±10 full rotations before hitting tape edge
+const CENTRE_REP = 10;   // start in the middle of the tape
 
 const COMPASS_MARKS = [
   {deg:0,    label:'N',  cls:'north cardinal'},
@@ -445,17 +451,33 @@ function buildCompassTrack(){
   el.innerHTML = html;
 }
 
-function updateCompass(heading){
-  heading = ((heading % 360) + 360) % 360;
-  // Centre rep's N sits at this px position in the tape
+// Accumulated heading — never modulo'd, so tape scrolls continuously
+let compassHeading = 0;
+
+function resetCompass(initialHeading){
+  compassHeading = ((initialHeading % 360) + 360) % 360;
+  _renderCompass(compassHeading);
+}
+
+function updateCompass(newHeading){
+  newHeading = ((newHeading % 360) + 360) % 360;
+  // Find the shortest angular step from current position to new heading
+  const prevNorm = ((compassHeading % 360) + 360) % 360;
+  let diff = newHeading - prevNorm;
+  if(diff >  180) diff -= 360;  // e.g. 350→10 should be +20 not -340
+  if(diff < -180) diff += 360;  // e.g. 10→350 should be -20 not +340
+  compassHeading += diff;
+  _renderCompass(compassHeading);
+}
+
+function _renderCompass(heading){
   const centreNpx = CENTRE_REP * 360 * PX_PER_DEG;
-  // Shift tape so that `heading` degree lands under the centre needle
   const tx = BAR_HALF - centreNpx - (heading * PX_PER_DEG);
   document.getElementById('compass-labels').style.transform = `translateX(${tx}px)`;
-
+  const normHeading = ((heading % 360) + 360) % 360;
   const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-  const label = dirs[Math.round(heading / 22.5) % 16];
-  document.getElementById('heading-readout').textContent = `${label}  ${Math.round(heading)}°`;
+  const label = dirs[Math.round(normHeading / 22.5) % 16];
+  document.getElementById('heading-readout').textContent = `${label}  ${Math.round(normHeading)}°`;
 }
 
 // ── Mini-map hover ─────────────────────────────────────────────────
@@ -527,6 +549,7 @@ function startGame(locs,meta){
   currentMapData=locs; currentMapMeta=meta;
   gameLocPool=shuffle([...locs]); poolIdx=0;
   round=0; total=0; roundScores=[];
+  document.getElementById('map-name-hud').textContent = meta.name;
   buildCompassTrack();
   showRound();
 }
@@ -541,7 +564,7 @@ function showRound(){
   document.getElementById('confirm-btn').disabled=true;
   document.getElementById('map-hint-text').textContent='Hover to expand · Click to place guess';
   show('s-game');
-  updateCompass(0);
+  resetCompass(0);
 
   document.getElementById('sv-loading').classList.remove('hidden');
   document.getElementById('loading-text').textContent='Finding a location…';
@@ -608,6 +631,8 @@ function initStreetView(lat,lng,heading){
     const pov=svPanorama.getPov();
     updateCompass(pov.heading);
   });
+  // Initialise compass to the starting heading
+  resetCompass(heading);
 
   setTimeout(()=>document.getElementById('sv-loading').classList.add('hidden'),800);
 }
@@ -635,7 +660,7 @@ function confirmGuess(){
   setProgress(round+1);
   document.getElementById('r-name').textContent='Round '+(round+1)+' location';
   document.getElementById('r-country').textContent=`${answerLat.toFixed(4)}°, ${answerLng.toFixed(4)}°`;
-  document.getElementById('r-dist').textContent=km<1?'< 1 km':km<1000?`${Math.round(km).toLocaleString()} km away`:`${(km/1000).toFixed(1)}k km away`;
+  document.getElementById('r-dist').textContent = km < 1 ? '< 1 km' : `${Math.round(km).toLocaleString()} km away`;
   document.getElementById('r-pts').textContent=`+${pts.toLocaleString()} pts`;
   document.getElementById('r-bar').style.width=(pts/5000*100)+'%';
   document.getElementById('r-running').textContent=total.toLocaleString();
@@ -667,7 +692,7 @@ function showFinal(){
   document.getElementById('f-rank').textContent=rank;
   let html=`<div class="br-row"><span>Round</span><span>Distance</span><span>Points</span></div>`;
   roundScores.forEach((s,i)=>{
-    const d=s.km<1000?`${Math.round(s.km)} km`:`${(s.km/1000).toFixed(1)}k km`;
+    const d = s.km < 1 ? '< 1 km' : `${Math.round(s.km).toLocaleString()} km`;
     html+=`<div class="br-row"><span>Round ${i+1}</span><span>${d}</span><span>+${s.pts.toLocaleString()}</span></div>`;
   });
   html+=`<div class="br-row"><span>Total</span><span></span><span>${total.toLocaleString()}</span></div>`;
