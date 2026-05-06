@@ -93,57 +93,47 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   backdrop-filter:blur(10px);
   border:1px solid var(--border);
   border-radius:8px;
-  padding:5px 14px 4px;
-  display:flex;align-items:center;gap:0;
   overflow:hidden;
   position:relative;
   width:260px;
-}
-/* The scrolling track inside the bar */
-#compass-track{
-  display:flex;
-  align-items:center;
-  width:100%;
-  position:relative;
-  height:28px;
-  overflow:hidden;
+  height:30px;
 }
 #compass-labels{
-  display:flex;
-  align-items:center;
-  position:absolute;
-  /* will be translated via JS */
-  transition:transform .1s linear;
-  gap:0;
-  white-space:nowrap;
+  position:absolute;top:0;left:0;height:100%;
+  transition:transform .08s linear;
+  will-change:transform;
 }
-.c-label{
-  display:inline-flex;align-items:center;justify-content:center;
-  width:32.5px; /* 260px / 8 directions shown at once */
+#compass-labels span{
+  position:absolute;top:0;height:100%;
+  display:flex;align-items:center;justify-content:center;
   font-size:.72rem;font-weight:600;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.05em;
-  user-select:none;
+  text-transform:uppercase;letter-spacing:.04em;
+  user-select:none;transform:translateX(-50%);
 }
-.c-label.cardinal{color:var(--text);font-size:.78rem}
-.c-label.north{color:var(--gold)}
-.c-tick{width:1px;height:8px;background:rgba(255,255,255,.15);flex-shrink:0}
-/* Centre marker */
+#compass-labels span.cardinal{color:var(--text);font-size:.76rem}
+#compass-labels span.north{color:var(--gold);font-size:.78rem}
+#compass-labels span.tick{
+  width:1px;height:8px;
+  background:rgba(255,255,255,.2);
+  top:50%;transform:translate(-50%,-50%);
+  font-size:0;
+}
 #compass-needle{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:2px;height:20px;border-radius:1px;
-  background:var(--gold);
-  box-shadow:0 0 6px var(--gold);
-  pointer-events:none;z-index:1;
+  width:2px;height:22px;border-radius:1px;
+  background:var(--gold);box-shadow:0 0 6px var(--gold);
+  pointer-events:none;z-index:2;
 }
-/* Heading readout */
+#compass-bar::before,#compass-bar::after{
+  content:'';position:absolute;top:0;bottom:0;width:36px;z-index:1;pointer-events:none;
+}
+#compass-bar::before{left:0;background:linear-gradient(to right,rgba(12,20,35,.9),transparent)}
+#compass-bar::after{right:0;background:linear-gradient(to left,rgba(12,20,35,.9),transparent)}
 #heading-readout{
   font-size:.72rem;color:var(--muted);
-  background:var(--glass);
-  backdrop-filter:blur(8px);
-  border:1px solid var(--border);
-  border-radius:5px;
-  padding:2px 8px;
-  letter-spacing:.04em;
+  background:var(--glass);backdrop-filter:blur(8px);
+  border:1px solid var(--border);border-radius:5px;
+  padding:2px 8px;letter-spacing:.04em;
 }
 
 /* ── Bottom-left controls ── */
@@ -313,10 +303,8 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   <!-- Compass -->
   <div id="compass-wrap">
     <div id="compass-bar">
-      <div id="compass-track">
-        <div id="compass-labels"></div>
-        <div id="compass-needle"></div>
-      </div>
+      <div id="compass-labels"></div>
+      <div id="compass-needle"></div>
     </div>
     <div id="heading-readout">N &nbsp;0°</div>
   </div>
@@ -418,48 +406,55 @@ function pulseIcon(){
 }
 
 // ── Compass ────────────────────────────────────────────────────────
-// Build a repeating tape of direction labels (3 full rotations so it scrolls smoothly)
-const COMPASS_DIRS = ['N','','NE','','E','','SE','','S','','SW','','W','','NW',''];
-// Each step = 22.5 degrees. Track width = 260px, 8 visible steps → step width = 32.5px
-const STEP_PX = 32.5;
-const STEPS_PER_DEG = STEP_PX / 22.5;  // px per degree
+// Absolute positioning: every element placed at exactly deg * PX_PER_DEG px.
+// No alternating widths = no drift.
+const PX_PER_DEG = 1.5;  // 260px bar ≈ 173° visible at once
+const BAR_HALF   = 130;
+const REPS       = 5;
+const CENTRE_REP = 2;    // use the 3rd repetition's N as the reference point
+
+const COMPASS_MARKS = [
+  {deg:0,    label:'N',  cls:'north cardinal'},
+  {deg:22.5, label:'',   cls:'tick'},
+  {deg:45,   label:'NE', cls:''},
+  {deg:67.5, label:'',   cls:'tick'},
+  {deg:90,   label:'E',  cls:'cardinal'},
+  {deg:112.5,label:'',   cls:'tick'},
+  {deg:135,  label:'SE', cls:''},
+  {deg:157.5,label:'',   cls:'tick'},
+  {deg:180,  label:'S',  cls:'cardinal'},
+  {deg:202.5,label:'',   cls:'tick'},
+  {deg:225,  label:'SW', cls:''},
+  {deg:247.5,label:'',   cls:'tick'},
+  {deg:270,  label:'W',  cls:'cardinal'},
+  {deg:292.5,label:'',   cls:'tick'},
+  {deg:315,  label:'NW', cls:''},
+  {deg:337.5,label:'',   cls:'tick'},
+];
 
 function buildCompassTrack(){
-  const track = document.getElementById('compass-labels');
-  // Repeat 5x so we can always scroll without hitting ends
+  const el = document.getElementById('compass-labels');
+  el.style.width = (REPS * 360 * PX_PER_DEG) + 'px';
   let html = '';
-  for(let rep=0; rep<5; rep++){
-    COMPASS_DIRS.forEach((label,i)=>{
-      const isN = label==='N';
-      const isCard = ['N','E','S','W'].includes(label);
-      if(label===''){
-        html+=`<span class="c-tick"></span>`;
-      } else {
-        html+=`<span class="c-label${isCard?' cardinal':''}${isN?' north':''}">${label}</span>`;
-      }
+  for(let rep = 0; rep < REPS; rep++){
+    COMPASS_MARKS.forEach(m => {
+      const x = (rep * 360 + m.deg) * PX_PER_DEG;
+      html += `<span class="${m.cls}" style="left:${x}px">${m.label}</span>`;
     });
   }
-  track.innerHTML = html;
+  el.innerHTML = html;
 }
 
 function updateCompass(heading){
-  // heading 0-360
   heading = ((heading % 360) + 360) % 360;
-  // Total tape width: 5 reps × 16 items × STEP_PX
-  // Centre heading at middle of visible 260px strip
-  // 0° = first N in middle of tape (rep 2 = index 32)
-  const totalSteps = 5 * 16;
-  const centreRep = 2; // use 3rd repetition as centre
-  const centreOffset = centreRep * 16 * STEP_PX; // px to get to centre rep's N
-  const headingOffset = heading * STEPS_PER_DEG;
-  const trackEl = document.getElementById('compass-labels');
-  const visibleHalf = 130; // half of 260px bar
-  const translateX = visibleHalf - centreOffset - headingOffset;
-  trackEl.style.transform = `translateX(${translateX}px)`;
+  // Centre rep's N sits at this px position in the tape
+  const centreNpx = CENTRE_REP * 360 * PX_PER_DEG;
+  // Shift tape so that `heading` degree lands under the centre needle
+  const tx = BAR_HALF - centreNpx - (heading * PX_PER_DEG);
+  document.getElementById('compass-labels').style.transform = `translateX(${tx}px)`;
 
-  // Update heading readout
   const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-  const label = dirs[Math.round(heading/22.5) % 16];
+  const label = dirs[Math.round(heading / 22.5) % 16];
   document.getElementById('heading-readout').textContent = `${label}  ${Math.round(heading)}°`;
 }
 
