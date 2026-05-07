@@ -81,10 +81,17 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 }
 .hud-chip span{color:var(--gold)}
 .hud-chip .label{font-size:.72rem;font-weight:400;color:var(--muted);display:block;margin-bottom:.05rem;text-transform:uppercase;letter-spacing:.08em}
+.hud-back-btn{
+  background:var(--glass);backdrop-filter:blur(8px);
+  border:1px solid var(--border);border-radius:8px;
+  padding:.45rem .8rem;font-size:1rem;color:var(--muted);
+  cursor:pointer;transition:all .15s;line-height:1;
+}
+.hud-back-btn:hover{color:var(--text);border-color:rgba(255,255,255,.25);background:var(--surface2)}
 
 /* ── Compass ── */
 #compass-wrap{
-  position:absolute;top:56px;left:50%;transform:translateX(-50%);
+  position:absolute;top:10px;left:50%;transform:translateX(-50%);
   z-index:200;pointer-events:none;
   display:flex;flex-direction:column;align-items:center;gap:3px;
 }
@@ -290,6 +297,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
     <div id="prog-bar"><div id="prog-fill" style="width:0%"></div></div>
     <div id="hud-row">
       <div style="display:flex;gap:.5rem;align-items:center">
+        <button class="hud-back-btn" onclick="goToMaps()" title="Back to map select">←</button>
         <div class="hud-chip">
           <span class="label">Round</span>
           <span id="round-num">1</span> <span style="color:var(--muted);font-weight:400">/</span> <span id="round-total">5</span>
@@ -707,6 +715,8 @@ document.addEventListener('keydown',e=>{
       e.preventDefault(); confirmGuess();
     } else if(document.getElementById('s-result').classList.contains('active')){
       e.preventDefault(); nextRound();
+    } else if(document.getElementById('s-final').classList.contains('active')){
+      e.preventDefault(); startGame(currentMapData,currentMapMeta);
     }
   }
   if(e.code==='KeyR' && document.getElementById('s-game').classList.contains('active')){
