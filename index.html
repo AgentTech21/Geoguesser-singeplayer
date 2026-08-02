@@ -56,7 +56,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 
 /* ══ GAME SCREEN ══ */
 #s-game{position:fixed;inset:0;display:block}
-#sv-container{position:absolute;inset:0;z-index:0}
+#sv-container{position:absolute;inset:0;z-index:0;overflow:hidden}
 
 /* ── Top HUD bar ── */
 #hud{position:absolute;top:0;left:0;right:0;z-index:200;pointer-events:none}
@@ -88,60 +88,6 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   cursor:pointer;transition:all .15s;line-height:1;
 }
 .hud-back-btn:hover{color:var(--text);border-color:rgba(255,255,255,.25);background:var(--surface2)}
-
-/* ── Compass ── */
-#compass-wrap{
-  position:absolute;top:10px;left:50%;transform:translateX(-50%);
-  z-index:200;pointer-events:none;
-  display:flex;flex-direction:column;align-items:center;gap:3px;
-}
-#compass-bar{
-  background:var(--glass);
-  backdrop-filter:blur(10px);
-  border:1px solid var(--border);
-  border-radius:8px;
-  overflow:hidden;
-  position:relative;
-  width:260px;
-  height:30px;
-}
-#compass-labels{
-  position:absolute;top:0;left:0;height:100%;
-  transition:transform .08s linear;
-  will-change:transform;
-}
-#compass-labels span{
-  position:absolute;top:0;height:100%;
-  display:flex;align-items:center;justify-content:center;
-  font-size:.72rem;font-weight:600;color:var(--muted);
-  text-transform:uppercase;letter-spacing:.04em;
-  user-select:none;transform:translateX(-50%);
-}
-#compass-labels span.cardinal{color:var(--text);font-size:.76rem}
-#compass-labels span.north{color:var(--gold);font-size:.78rem}
-#compass-labels span.tick{
-  width:1px;height:8px;
-  background:rgba(255,255,255,.2);
-  top:50%;transform:translate(-50%,-50%);
-  font-size:0;
-}
-#compass-needle{
-  position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);
-  width:2px;height:22px;border-radius:1px;
-  background:var(--gold);box-shadow:0 0 6px var(--gold);
-  pointer-events:none;z-index:2;
-}
-#compass-bar::before,#compass-bar::after{
-  content:'';position:absolute;top:0;bottom:0;width:36px;z-index:1;pointer-events:none;
-}
-#compass-bar::before{left:0;background:linear-gradient(to right,rgba(12,20,35,.9),transparent)}
-#compass-bar::after{right:0;background:linear-gradient(to left,rgba(12,20,35,.9),transparent)}
-#heading-readout{
-  font-size:.72rem;color:var(--muted);
-  background:var(--glass);backdrop-filter:blur(8px);
-  border:1px solid var(--border);border-radius:5px;
-  padding:2px 8px;letter-spacing:.04em;
-}
 
 /* ── Bottom-left controls ── */
 #sv-controls{
@@ -186,7 +132,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 
 /* ── Mini-map panel ── */
 #map-panel{
-  position:absolute;bottom:24px;right:24px;z-index:300;
+  position:absolute;bottom:24px;right:110px;z-index:300;
   background:rgba(12,20,35,.92);backdrop-filter:blur(12px);
   border:1px solid var(--border);border-radius:12px;
   box-shadow:var(--shadow);
@@ -297,7 +243,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
     <div id="prog-bar"><div id="prog-fill" style="width:0%"></div></div>
     <div id="hud-row">
       <div style="display:flex;gap:.5rem;align-items:center">
-        <button class="hud-back-btn" onclick="goToMaps()" title="Back to map select">←</button>
+        <button class="hud-back-btn" onclick="show('s-intro')" title="Back to home">←</button>
         <div class="hud-chip">
           <span class="label">Round</span>
           <span id="round-num">1</span> <span style="color:var(--muted);font-weight:400">/</span> <span id="round-total">5</span>
@@ -312,15 +258,6 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
         <span id="score-run">0</span>
       </div>
     </div>
-  </div>
-
-  <!-- Compass -->
-  <div id="compass-wrap">
-    <div id="compass-bar">
-      <div id="compass-labels"></div>
-      <div id="compass-needle"></div>
-    </div>
-    <div id="heading-readout">N &nbsp;0°</div>
   </div>
 
   <!-- Bottom-left controls -->
@@ -419,75 +356,6 @@ function pulseIcon(){
   return L.divIcon({className:'',html:`<div style="position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center"><div style="width:16px;height:16px;border-radius:50%;background:#d4a853;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:1;position:relative"></div><div style="position:absolute;inset:0;border-radius:50%;background:#d4a853;opacity:.3;animation:ring 1.5s ease-out infinite"></div></div>`,iconAnchor:[14,14]});
 }
 
-// ── Compass ────────────────────────────────────────────────────────
-// Absolute positioning: every element placed at exactly deg * PX_PER_DEG px.
-// No alternating widths = no drift.
-const PX_PER_DEG = 1.5;  // 260px bar ≈ 173° visible at once
-const BAR_HALF   = 130;
-const REPS       = 21;   // enough for ±10 full rotations before hitting tape edge
-const CENTRE_REP = 10;   // start in the middle of the tape
-
-const COMPASS_MARKS = [
-  {deg:0,    label:'N',  cls:'north cardinal'},
-  {deg:22.5, label:'',   cls:'tick'},
-  {deg:45,   label:'NE', cls:''},
-  {deg:67.5, label:'',   cls:'tick'},
-  {deg:90,   label:'E',  cls:'cardinal'},
-  {deg:112.5,label:'',   cls:'tick'},
-  {deg:135,  label:'SE', cls:''},
-  {deg:157.5,label:'',   cls:'tick'},
-  {deg:180,  label:'S',  cls:'cardinal'},
-  {deg:202.5,label:'',   cls:'tick'},
-  {deg:225,  label:'SW', cls:''},
-  {deg:247.5,label:'',   cls:'tick'},
-  {deg:270,  label:'W',  cls:'cardinal'},
-  {deg:292.5,label:'',   cls:'tick'},
-  {deg:315,  label:'NW', cls:''},
-  {deg:337.5,label:'',   cls:'tick'},
-];
-
-function buildCompassTrack(){
-  const el = document.getElementById('compass-labels');
-  el.style.width = (REPS * 360 * PX_PER_DEG) + 'px';
-  let html = '';
-  for(let rep = 0; rep < REPS; rep++){
-    COMPASS_MARKS.forEach(m => {
-      const x = (rep * 360 + m.deg) * PX_PER_DEG;
-      html += `<span class="${m.cls}" style="left:${x}px">${m.label}</span>`;
-    });
-  }
-  el.innerHTML = html;
-}
-
-// Accumulated heading — never modulo'd, so tape scrolls continuously
-let compassHeading = 0;
-
-function resetCompass(initialHeading){
-  compassHeading = ((initialHeading % 360) + 360) % 360;
-  _renderCompass(compassHeading);
-}
-
-function updateCompass(newHeading){
-  newHeading = ((newHeading % 360) + 360) % 360;
-  // Find the shortest angular step from current position to new heading
-  const prevNorm = ((compassHeading % 360) + 360) % 360;
-  let diff = newHeading - prevNorm;
-  if(diff >  180) diff -= 360;  // e.g. 350→10 should be +20 not -340
-  if(diff < -180) diff += 360;  // e.g. 10→350 should be -20 not +340
-  compassHeading += diff;
-  _renderCompass(compassHeading);
-}
-
-function _renderCompass(heading){
-  const centreNpx = CENTRE_REP * 360 * PX_PER_DEG;
-  const tx = BAR_HALF - centreNpx - (heading * PX_PER_DEG);
-  document.getElementById('compass-labels').style.transform = `translateX(${tx}px)`;
-  const normHeading = ((heading % 360) + 360) % 360;
-  const dirs = ['N','NNE','NE','ENE','E','ESE','SE','SSE','S','SSW','SW','WSW','W','WNW','NW','NNW'];
-  const label = dirs[Math.round(normHeading / 22.5) % 16];
-  document.getElementById('heading-readout').textContent = `${label}  ${Math.round(normHeading)}°`;
-}
-
 // ── Mini-map hover ─────────────────────────────────────────────────
 const mapPanel = document.getElementById('map-panel');
 mapPanel.addEventListener('mouseenter',()=>{
@@ -546,7 +414,6 @@ function startGame(locs,meta){
   gameLocPool=shuffle([...locs]); poolIdx=0;
   round=0; total=0; roundScores=[];
   document.getElementById('map-name-hud').textContent = meta.name;
-  buildCompassTrack();
   showRound();
 }
 
@@ -560,7 +427,6 @@ function showRound(){
   document.getElementById('confirm-btn').disabled=true;
   document.getElementById('map-hint-text').textContent='Hover to expand · Click to place guess';
   show('s-game');
-  resetCompass(0);
 
   document.getElementById('sv-loading').classList.remove('hidden');
   document.getElementById('loading-text').textContent='Dropping you in…';
@@ -572,7 +438,7 @@ function showRound(){
     const cLng=currentMapMeta.center?currentMapMeta.center.lng:0;
     const cZoom=currentMapMeta.zoom||2;
     guessMap=L.map('guess-map-el',{zoomControl:true,attributionControl:false}).setView([cLat,cLng],cZoom);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(guessMap);
+    L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en&scale=2',{subdomains:['0','1','2','3'],maxZoom:20}).addTo(guessMap);
     guessMarker=null;
     guessMap.on('click',e=>{
       guessLat=e.latlng.lat; guessLng=e.latlng.lng;
@@ -609,17 +475,13 @@ function initStreetView(lat,lng,heading){
   const iframe=document.createElement('iframe');
   iframe.id='sv-iframe';
   iframe.src=svInitialSrc;
-  iframe.style.cssText='width:100%;height:100%;border:0';
+  iframe.style.cssText='position:absolute;top:-75px;left:0;width:100%;height:calc(100% + 75px);border:0';
   iframe.allowFullscreen=true;
   iframe.loading='eager';
   iframe.addEventListener('load',()=>{
     document.getElementById('sv-loading').classList.add('hidden');
   });
   container.appendChild(iframe);
-
-  // Set the compass to the starting heading. The embed runs in a cross-origin
-  // iframe so we can't track live heading changes as the user looks around.
-  resetCompass(heading);
 }
 
 // ── SV controls ────────────────────────────────────────────────────
@@ -627,7 +489,6 @@ function returnToStart(){
   const iframe=document.getElementById('sv-iframe');
   if(!iframe||!svInitialSrc) return;
   iframe.src=svInitialSrc;
-  resetCompass(startHeading);
 }
 
 // ── Confirm guess ──────────────────────────────────────────────────
@@ -674,7 +535,7 @@ function confirmGuess(){
   setTimeout(()=>{
     if(resMap){resMap.remove();resMap=null;}
     resMap=L.map('res-map',{zoomControl:true,attributionControl:false}).setView([0,0],2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19}).addTo(resMap);
+    L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en&scale=2',{subdomains:['0','1','2','3'],maxZoom:20}).addTo(resMap);
     L.marker([guessLat,guessLng],{icon:dotIcon('#d4a853')}).addTo(resMap).bindTooltip('Your guess');
     L.marker([answerLat,answerLng],{icon:dotIcon('#34d399')}).addTo(resMap).bindTooltip('Actual location',{permanent:true,direction:'top',offset:[0,-8]});
     L.polyline([[guessLat,guessLng],[answerLat,answerLng]],{color:'#94a3b8',weight:1.5,dashArray:'6,5'}).addTo(resMap);
