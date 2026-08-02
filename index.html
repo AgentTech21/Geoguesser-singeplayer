@@ -325,8 +325,6 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 
   <!-- Bottom-left controls -->
   <div id="sv-controls">
-    <button class="sv-btn sv-btn-zoom" id="btn-zoom-in"  data-tip="Zoom in"        onclick="svZoom(1)">+</button>
-    <button class="sv-btn sv-btn-zoom" id="btn-zoom-out" data-tip="Zoom out"       onclick="svZoom(-1)">−</button>
     <button class="sv-btn"             id="btn-return"   data-tip="Return to start  [R]" onclick="returnToStart()">🚩</button>
   </div>
 
@@ -357,6 +355,10 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
       <div class="metric-val green" id="r-pts">—</div>
       <div class="pts-bar"><div class="pts-fill" id="r-bar" style="width:0%"></div></div>
     </div>
+    <div class="metric">
+      <div class="metric-label">Country</div>
+      <div class="metric-val" id="r-country-val" style="font-size:1.05rem">—</div>
+    </div>
     <div style="margin-top:auto;display:flex;flex-direction:column;gap:.5rem">
       <button class="btn btn-gold" id="next-btn" onclick="nextRound()" style="justify-content:center">Next Round →</button>
       <div style="font-size:.73rem;color:var(--muted);text-align:center">
@@ -383,18 +385,16 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
 <script>
-const API_KEY = 'AIzaSyBIJk7x8L3ig2C6Eo3qV8atGtWIMSX8BA4';
 const ROUNDS = 5;
 
-let gmLoaded = false;
 let currentMapData = null, currentMapMeta = null;
 let gameLocPool = [], poolIdx = 0;
 let round = 0, total = 0, roundScores = [];
-let answerLat, answerLng, startLat, startLng, startHeading;
+let answerLat, answerLng, answerCountry, startLat, startLng, startHeading;
 let guessLat = null, guessLng = null;
 let guessMap = null, resMap = null, guessMarker = null;
 let collapseTimer = null;
-let svPanorama = null;   // kept so we can zoom + return to start
+let svInitialSrc = null;   // kept so "return to start" can reset the embed iframe
 
 // ── Screen ─────────────────────────────────────────────────────────
 function show(id){
@@ -502,15 +502,6 @@ mapPanel.addEventListener('mouseleave',()=>{
   },300);
 });
 
-// ── Google Maps loader ─────────────────────────────────────────────
-function loadGoogleMaps(cb){
-  if(gmLoaded){cb();return;}
-  window._gmCb=()=>{gmLoaded=true;cb();};
-  const s=document.createElement('script');
-  s.src=`https://maps.googleapis.com/maps/api/js?key=${API_KEY}&callback=_gmCb`;
-  s.async=true; document.head.appendChild(s);
-}
-
 // ── Map selection ──────────────────────────────────────────────────
 function goToMaps(){
   show('s-maps');
@@ -530,9 +521,8 @@ function goToMaps(){
           <div class="map-card-count">Loading…</div>`;
         card.onclick=()=>{card.style.opacity='.5';loadAndStart(m,card);};
         cards.appendChild(card);
-        fetch(m.file).then(r=>r.text()).then(txt=>{
-          const n=txt.split('\n').filter(l=>l.trim()&&!l.startsWith('#')).length;
-          card.querySelector('.map-card-count').textContent=`${n.toLocaleString()} locations`;
+        fetch(m.file).then(r=>r.json()).then(arr=>{
+          card.querySelector('.map-card-count').textContent=`${arr.length.toLocaleString()} locations`;
         }).catch(()=>{card.querySelector('.map-card-count').textContent='Tap to play';});
       });
     })
@@ -541,13 +531,11 @@ function goToMaps(){
 
 function loadAndStart(mapMeta,cardEl){
   fetch(mapMeta.file)
-    .then(r=>{if(!r.ok)throw new Error();return r.text();})
-    .then(txt=>{
-      const locs=txt.split('\n').map(l=>l.trim()).filter(l=>l&&!l.startsWith('#'))
-        .map(l=>{const p=l.split(',');return{lat:parseFloat(p[0]),lng:parseFloat(p[1])};})
-        .filter(l=>!isNaN(l.lat)&&!isNaN(l.lng));
+    .then(r=>{if(!r.ok)throw new Error();return r.json();})
+    .then(arr=>{
+      const locs=arr.filter(l=>typeof l.lat==='number'&&typeof l.lng==='number');
       if(!locs.length) throw new Error('Empty');
-      loadGoogleMaps(()=>startGame(locs,mapMeta));
+      startGame(locs,mapMeta);
     })
     .catch(()=>{alert('Failed to load: '+mapMeta.file);if(cardEl)cardEl.style.opacity='1';});
 }
@@ -575,7 +563,7 @@ function showRound(){
   resetCompass(0);
 
   document.getElementById('sv-loading').classList.remove('hidden');
-  document.getElementById('loading-text').textContent='Finding a location…';
+  document.getElementById('loading-text').textContent='Dropping you in…';
 
   // Guess map
   setTimeout(()=>{
@@ -595,67 +583,51 @@ function showRound(){
     });
   },50);
 
-  findStreetView(0);
+  findStreetView();
 }
 
-// ── Street View ────────────────────────────────────────────────────
-function findStreetView(attempts){
+// ── Street View (free Embed, no API key) ────────────────────────────
+function findStreetView(){
   if(poolIdx>=gameLocPool.length){gameLocPool=shuffle([...currentMapData]);poolIdx=0;}
   const loc=gameLocPool[poolIdx++];
-  const svRadius=(currentMapMeta&&currentMapMeta.svRadius)?currentMapMeta.svRadius:5000;
-  const svc=new google.maps.StreetViewService();
-  svc.getPanorama({
-    location:{lat:loc.lat,lng:loc.lng},
-    radius:svRadius,
-    source:google.maps.StreetViewSource.OUTDOOR
-  },(data,status)=>{
-    if(status===google.maps.StreetViewStatus.OK){
-      answerLat=data.location.latLng.lat();
-      answerLng=data.location.latLng.lng();
-      startLat=answerLat; startLng=answerLng;
-      startHeading=Math.random()*360;
-      initStreetView(answerLat,answerLng,startHeading);
-    } else {
-      if(attempts<gameLocPool.length) findStreetView(attempts+1);
-      else{document.getElementById('loading-text').textContent='Struggling to find coverage…';setTimeout(()=>findStreetView(0),1500);}
-    }
-  });
+  answerLat=loc.lat; answerLng=loc.lng; answerCountry=loc.country||null;
+  startLat=answerLat; startLng=answerLng;
+  // Start looking at the heading specified in the location data, if present
+  startHeading=(typeof loc.heading==='number')?loc.heading:Math.random()*360;
+  initStreetView(answerLat,answerLng,startHeading);
+}
+
+function streetViewEmbedUrl(lat,lng,heading){
+  // Classic free Street View embed - no API key required
+  return `https://maps.google.com/maps?layer=c&cbll=${lat},${lng}&cbp=11,${heading},0,0,0&output=svembed`;
 }
 
 function initStreetView(lat,lng,heading){
-  svPanorama=new google.maps.StreetViewPanorama(document.getElementById('sv-container'),{
-    position:{lat,lng},
-    pov:{heading,pitch:0},
-    zoom:0,
-    // Hide ALL default Google UI - we provide our own
-    disableDefaultUI:true,
-    linksControl:true,
-    clickToGo:true,
-    scrollwheel:true,
+  const container=document.getElementById('sv-container');
+  container.innerHTML='';
+  svInitialSrc=streetViewEmbedUrl(lat,lng,heading);
+  const iframe=document.createElement('iframe');
+  iframe.id='sv-iframe';
+  iframe.src=svInitialSrc;
+  iframe.style.cssText='width:100%;height:100%;border:0';
+  iframe.allowFullscreen=true;
+  iframe.loading='eager';
+  iframe.addEventListener('load',()=>{
+    document.getElementById('sv-loading').classList.add('hidden');
   });
+  container.appendChild(iframe);
 
-  // Update compass as user pans
-  svPanorama.addListener('pov_changed',()=>{
-    const pov=svPanorama.getPov();
-    updateCompass(pov.heading);
-  });
-  // Initialise compass to the starting heading
+  // Set the compass to the starting heading. The embed runs in a cross-origin
+  // iframe so we can't track live heading changes as the user looks around.
   resetCompass(heading);
-
-  setTimeout(()=>document.getElementById('sv-loading').classList.add('hidden'),800);
 }
 
 // ── SV controls ────────────────────────────────────────────────────
-function svZoom(delta){
-  if(!svPanorama) return;
-  svPanorama.setZoom(Math.max(0,Math.min(5,(svPanorama.getZoom()||0)+delta)));
-}
-
 function returnToStart(){
-  if(!svPanorama) return;
-  svPanorama.setPosition({lat:startLat,lng:startLng});
-  svPanorama.setPov({heading:startHeading,pitch:0});
-  svPanorama.setZoom(0);
+  const iframe=document.getElementById('sv-iframe');
+  if(!iframe||!svInitialSrc) return;
+  iframe.src=svInitialSrc;
+  resetCompass(startHeading);
 }
 
 // ── Confirm guess ──────────────────────────────────────────────────
@@ -667,13 +639,38 @@ function confirmGuess(){
   total+=pts; roundScores.push({km,pts});
   setProgress(round+1);
   document.getElementById('r-name').textContent='Round '+(round+1)+' location';
-  document.getElementById('r-country').textContent=`${answerLat.toFixed(4)}°, ${answerLng.toFixed(4)}°`;
+  document.getElementById('r-country').textContent=`${answerLat.toFixed(4)}°, ${answerLng.toFixed(4)}°`+(answerCountry?` · ${answerCountry}`:'');
   document.getElementById('r-dist').textContent = km < 1 ? '< 1 km' : `${Math.round(km).toLocaleString()} km away`;
   document.getElementById('r-pts').textContent=`+${pts.toLocaleString()} pts`;
   document.getElementById('r-bar').style.width=(pts/5000*100)+'%';
   document.getElementById('r-running').textContent=total.toLocaleString();
   document.getElementById('next-btn').textContent=round===ROUNDS-1?'See Final Score →':'Next Round →';
   show('s-result');
+
+  // Country check - free reverse geocode of the guess pin via Nominatim (no API key)
+  const countryEl=document.getElementById('r-country-val');
+  if(answerCountry){
+    countryEl.textContent='Checking…';
+    countryEl.style.color='';
+    fetch(`https://nominatim.openstreetmap.org/reverse?format=jsonv2&lat=${guessLat}&lon=${guessLng}&zoom=3`)
+      .then(r=>r.json())
+      .then(data=>{
+        const guessedCode=(data && data.address && data.address.country_code)?data.address.country_code.toUpperCase():null;
+        if(guessedCode && guessedCode===answerCountry.toUpperCase()){
+          countryEl.textContent=`✅ Correct — ${answerCountry}`;
+          countryEl.style.color='var(--green)';
+        } else if(guessedCode){
+          countryEl.textContent=`❌ ${guessedCode} → actual: ${answerCountry}`;
+          countryEl.style.color='#f87171';
+        } else {
+          countryEl.textContent=`Actual: ${answerCountry}`;
+        }
+      })
+      .catch(()=>{countryEl.textContent=`Actual: ${answerCountry}`;});
+  } else {
+    countryEl.textContent='—';
+  }
+
   setTimeout(()=>{
     if(resMap){resMap.remove();resMap=null;}
     resMap=L.map('res-map',{zoomControl:true,attributionControl:false}).setView([0,0],2);
