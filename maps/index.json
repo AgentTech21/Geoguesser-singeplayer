@@ -3,7 +3,7 @@
     "id": "world",
     "name": "World",
     "description": "Random locations across the entire globe",
-    "file": "maps/world.txt",
+    "file": "maps/world.json",
     "icon": "🌍",
     "center": { "lat": 20, "lng": 0 },
     "zoom": 2,
@@ -14,22 +14,11 @@
     "id": "australia",
     "name": "Australia",
     "description": "Locations across the entire Australian continent",
-    "file": "maps/australia.txt",
+    "file": "maps/australia.json",
     "icon": "🦘",
     "center": { "lat": -25, "lng": 134 },
     "zoom": 4,
     "scoreRadius": 513,
     "svRadius": 5000
-  },
-  {
-    "id": "perth",
-    "name": "Perth, Australia",
-    "description": "Streets and suburbs across the Perth metro area",
-    "file": "maps/perth.txt",
-    "icon": "🏙️",
-    "center": { "lat": -31.95, "lng": 115.86 },
-    "zoom": 10,
-    "scoreRadius": 11,
-    "svRadius": 1000
   }
 ]
