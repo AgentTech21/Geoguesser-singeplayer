@@ -64,7 +64,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 #prog-fill{height:100%;background:var(--gold);transition:width .5s}
 #hud-row{
   display:flex;justify-content:space-between;align-items:center;
-  padding:.6rem 1.2rem .6rem 66px;
+  padding:.6rem 1.2rem;
   background:linear-gradient(to bottom,rgba(10,17,30,.85) 0%,transparent 100%);
 }
 /* Round and score chips — bigger and more prominent */
@@ -81,19 +81,6 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 }
 .hud-chip span{color:var(--gold)}
 .hud-chip .label{font-size:.72rem;font-weight:400;color:var(--muted);display:block;margin-bottom:.05rem;text-transform:uppercase;letter-spacing:.08em}
-#back-btn{
-  position:fixed;top:14px;left:14px;z-index:500;
-  isolation:isolate;
-  width:40px;height:40px;
-  display:flex;align-items:center;justify-content:center;
-  background:var(--glass);backdrop-filter:blur(8px);
-  border:1px solid var(--border);border-radius:8px;
-  font-size:1.1rem;color:var(--muted);
-  cursor:pointer;transition:all .15s;
-  pointer-events:auto;
-}
-#back-btn:hover{color:var(--text);border-color:rgba(255,255,255,.25);background:var(--surface2)}
-
 /* ── Bottom-left controls ── */
 #sv-controls{
   position:absolute;bottom:24px;left:24px;z-index:300;
@@ -264,13 +251,10 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
     </div>
   </div>
 
-  <!-- Standalone back button - isolated from the HUD stack entirely, so there's
-       no ambiguity about inherited pointer-events or stacking with the iframe -->
-  <button id="back-btn" onclick="show('s-intro')" title="Back to home">←</button>
-
   <!-- Bottom-left controls -->
   <div id="sv-controls">
     <button class="sv-btn"             id="btn-return"   data-tip="Return to start  [R]" onclick="returnToStart()">🚩</button>
+    <button class="sv-btn"             id="btn-back"     data-tip="Back to home"          onclick="show('s-intro')">←</button>
   </div>
 
   <!-- Mini-map -->
