@@ -21,4 +21,15 @@
     "scoreRadius": 513,
     "svRadius": 5000
   }
+  {
+    "id": "perth",
+    "name": "Perth, Australia",
+    "description": "Streets and suburbs across the Perth metro area",
+    "file": "maps/perth.json",
+    "icon": "🏙️",
+    "center": { "lat": -31.95, "lng": 115.86 },
+    "zoom": 10,
+    "scoreRadius": 11,
+    "svRadius": 1000
+  }
 ]
