@@ -81,7 +81,39 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
 }
 .hud-chip span{color:var(--gold)}
 .hud-chip .label{font-size:.72rem;font-weight:400;color:var(--muted);display:block;margin-bottom:.05rem;text-transform:uppercase;letter-spacing:.08em}
-/* ── Bottom-left controls ── */
+/* ── Leave-confirmation modal ── */
+#leave-modal-backdrop{
+  position:fixed;inset:0;z-index:1000;
+  background:rgba(6,10,18,.65);backdrop-filter:blur(4px);
+  display:none;align-items:center;justify-content:center;
+  animation:fadeIn .15s ease-out;
+}
+#leave-modal-backdrop.open{display:flex}
+#leave-modal{
+  width:min(360px,90vw);
+  background:var(--surface2,#141b29);
+  border:1px solid var(--border);border-radius:16px;
+  box-shadow:0 24px 60px rgba(0,0,0,.5);
+  padding:1.6rem 1.5rem 1.4rem;text-align:center;
+  animation:modalPop .18s cubic-bezier(.4,0,.2,1);
+}
+#leave-modal-icon{font-size:1.8rem;margin-bottom:.4rem}
+#leave-modal h2{font-size:1.15rem;font-weight:700;margin:0 0 .5rem;color:var(--text)}
+#leave-modal p{font-size:.85rem;color:var(--muted);margin:0 0 1.3rem;line-height:1.4}
+#leave-modal-actions{display:flex;gap:.6rem}
+#leave-modal-actions button{
+  flex:1;padding:.6rem;border-radius:8px;border:1px solid var(--border);
+  font-family:'Inter',sans-serif;font-weight:600;font-size:.84rem;
+  cursor:pointer;transition:all .15s;
+}
+#leave-modal-cancel{background:var(--surface,#1b2434);color:var(--text)}
+#leave-modal-cancel:hover{background:rgba(255,255,255,.08)}
+#leave-modal-confirm{background:#dc4444;border-color:#dc4444;color:#fff}
+#leave-modal-confirm:hover{background:#c93a3a}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes modalPop{from{opacity:0;transform:scale(.94)}to{opacity:1;transform:scale(1)}}
+
+
 #sv-controls{
   position:absolute;bottom:24px;left:24px;z-index:300;
   display:flex;flex-direction:column;gap:8px;
@@ -133,8 +165,8 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   overflow:hidden;
 }
 #guess-map-el{height:200px;transition:height .28s cubic-bezier(.4,0,.2,1)}
-#map-panel.big{width:680px}
-#map-panel.big #guess-map-el{height:520px}
+#map-panel.big{width:820px}
+#map-panel.big #guess-map-el{height:600px}
 #map-toolbar{display:flex;align-items:center;justify-content:space-between;
   padding:.45rem .65rem .45rem .8rem;border-bottom:1px solid var(--border);gap:.5rem}
 #map-hint-text{font-size:.73rem;color:var(--muted);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -254,7 +286,7 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
   <!-- Bottom-left controls -->
   <div id="sv-controls">
     <button class="sv-btn"             id="btn-return"   data-tip="Return to start  [R]" onclick="returnToStart()">🚩</button>
-    <button class="sv-btn"             id="btn-back"     data-tip="Back to home"          onclick="show('s-intro')">←</button>
+    <button class="sv-btn"             id="btn-back"     data-tip="Back to home"          onclick="confirmLeaveGame()">←</button>
   </div>
 
   <!-- Mini-map -->
@@ -266,6 +298,19 @@ html,body{height:100%;overflow:hidden;font-family:'Inter',sans-serif;background:
     <div id="map-footer">
       <button id="confirm-btn" disabled onclick="confirmGuess()">Confirm Guess</button>
       <span class="kbd">Space</span>
+    </div>
+  </div>
+
+  <!-- Leave-confirmation modal -->
+  <div id="leave-modal-backdrop" onclick="if(event.target===this)cancelLeaveGame()">
+    <div id="leave-modal">
+      <div id="leave-modal-icon">⚠️</div>
+      <h2>Leave this match?</h2>
+      <p>Your current round and score progress will be lost.</p>
+      <div id="leave-modal-actions">
+        <button id="leave-modal-cancel" onclick="cancelLeaveGame()">Stay in match</button>
+        <button id="leave-modal-confirm" onclick="doLeaveGame()">Leave</button>
+      </div>
     </div>
   </div>
 </div>
@@ -332,20 +377,38 @@ function show(id){
 }
 function goMultiplayer(){ window.location.href='https://geoguesser-multiplayer.onrender.com'; }
 
+// ── Leave-confirmation modal ─────────────────────────────────────────
+function confirmLeaveGame(){
+  document.getElementById('leave-modal-backdrop').classList.add('open');
+}
+function cancelLeaveGame(){
+  document.getElementById('leave-modal-backdrop').classList.remove('open');
+}
+function doLeaveGame(){
+  document.getElementById('leave-modal-backdrop').classList.remove('open');
+  show('s-intro');
+}
+
 // ── Utils ──────────────────────────────────────────────────────────
 function haversine(a,b,c,d){
   const R=6371,dL=(c-a)*Math.PI/180,dG=(d-b)*Math.PI/180;
   const x=Math.sin(dL/2)**2+Math.cos(a*Math.PI/180)*Math.cos(c*Math.PI/180)*Math.sin(dG/2)**2;
   return R*2*Math.atan2(Math.sqrt(x),Math.sqrt(1-x));
 }
-function calcScore(km,r){ return Math.round(5000*Math.exp(-km/r)); }
+function calcScore(km,r){
+  if(km*1000<=25) return 5000;
+  return Math.round(5000*Math.exp(-km/r));
+}
 function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]} return b; }
 function setProgress(n){ document.getElementById('prog-fill').style.width=(n/ROUNDS*100)+'%'; }
 function dotIcon(color){
-  return L.divIcon({className:'',html:`<div style="width:16px;height:16px;border-radius:50%;background:${color};border:2.5px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.5)"></div>`,iconAnchor:[8,8]});
+  return L.divIcon({className:'',html:`<div style="width:24px;height:24px;border-radius:50%;background:${color};border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5)"></div>`,iconAnchor:[12,12]});
+}
+function actualLocationIcon(){
+  return L.divIcon({className:'',html:`<div style="width:30px;height:30px;border-radius:50%;background:#0f1115;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;font-size:15px;line-height:1">🚩</div>`,iconAnchor:[15,15]});
 }
 function pulseIcon(){
-  return L.divIcon({className:'',html:`<div style="position:relative;width:28px;height:28px;display:flex;align-items:center;justify-content:center"><div style="width:16px;height:16px;border-radius:50%;background:#d4a853;border:2.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:1;position:relative"></div><div style="position:absolute;inset:0;border-radius:50%;background:#d4a853;opacity:.3;animation:ring 1.5s ease-out infinite"></div></div>`,iconAnchor:[14,14]});
+  return L.divIcon({className:'',html:`<div style="position:relative;width:34px;height:34px;display:flex;align-items:center;justify-content:center"><div style="width:22px;height:22px;border-radius:50%;background:#d4a853;border:3px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);z-index:1;position:relative"></div><div style="position:absolute;inset:0;border-radius:50%;background:#d4a853;opacity:.3;animation:ring 1.5s ease-out infinite"></div></div>`,iconAnchor:[17,17]});
 }
 
 // ── Mini-map hover ─────────────────────────────────────────────────
@@ -493,7 +556,7 @@ function confirmGuess(){
   setProgress(round+1);
   document.getElementById('r-name').textContent='Round '+(round+1)+' location';
   document.getElementById('r-country').textContent=`${answerLat.toFixed(4)}°, ${answerLng.toFixed(4)}°`+(answerCountry?` · ${answerCountry}`:'');
-  document.getElementById('r-dist').textContent = km < 1 ? '< 1 km' : `${Math.round(km).toLocaleString()} km away`;
+  document.getElementById('r-dist').textContent = km < 1 ? `${Math.max(1,Math.round(km*1000)).toLocaleString()} m away` : `${Math.round(km).toLocaleString()} km away`;
   document.getElementById('r-pts').textContent=`+${pts.toLocaleString()} pts`;
   document.getElementById('r-bar').style.width=(pts/5000*100)+'%';
   document.getElementById('r-running').textContent=total.toLocaleString();
@@ -529,7 +592,7 @@ function confirmGuess(){
     resMap=L.map('res-map',{zoomControl:true,attributionControl:false}).setView([0,0],2);
     L.tileLayer('https://mt{s}.google.com/vt/lyrs=m&x={x}&y={y}&z={z}&hl=en&scale=2',{subdomains:['0','1','2','3'],maxZoom:20}).addTo(resMap);
     L.marker([guessLat,guessLng],{icon:dotIcon('#d4a853')}).addTo(resMap).bindTooltip('Your guess');
-    L.marker([answerLat,answerLng],{icon:dotIcon('#34d399')}).addTo(resMap).bindTooltip('Actual location',{permanent:true,direction:'top',offset:[0,-8]});
+    L.marker([answerLat,answerLng],{icon:actualLocationIcon()}).addTo(resMap).bindTooltip('Actual location',{permanent:true,direction:'top',offset:[0,-10]});
     L.polyline([[guessLat,guessLng],[answerLat,answerLng]],{color:'#94a3b8',weight:1.5,dashArray:'6,5'}).addTo(resMap);
     resMap.fitBounds(L.latLngBounds([[guessLat,guessLng],[answerLat,answerLng]]),{padding:[60,60]});
   },50);
